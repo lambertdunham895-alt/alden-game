@@ -26,7 +26,7 @@
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="ver">OVERLOOK v8</div>
+<div id="ver">OVERLOOK v10</div>
 <div id="hint">Drag anywhere to walk &middot; or WASD / arrow keys</div>
 <div id="title"><div class="t">Briar Hollow</div><div class="s">The Overlook</div></div>
 <div id="loading">Loading Briar Hollow&hellip;</div>
@@ -54,15 +54,16 @@ scene.onload=()=>{ ready=true; const l=document.getElementById('loading'); if(l)
 scene.onerror=()=>{ document.getElementById('loading').textContent='Could not load assets/scene.jpg'; };
 scene.src='assets/scene.jpg?v=6';
 
-// Alden sprites
-const ASPR={}; let aLoaded=0;
+// Alden run animation (8-frame strip per direction)
+const ARUN={};
 for(const f of ['down','up','left','right']){
-  const im=new Image(); im.onload=()=>{aLoaded++;}; im.src='assets/alden_'+f+'.png?v=5'; ASPR[f]=im;
+  const im=new Image(); im.src='assets/alden_run_'+f+'.png?v=10'; ARUN[f]=im;
 }
+const RUN_FRAMES=8, RUN_FPS=12, RUN_CW=162, RUN_CH=200;
 const ASIZE=120;   // Alden height in world px (tunable)
 
 // player (world = scene px)
-const player={ x:768, y:980, speed:230, face:'down', moving:false, anim:0 };
+const player={ x:768, y:980, speed:230, face:'down', moving:false, anim:0, runT:0 };
 const PSCALE=2.0;   // character render scale
 
 function cellBlocked(wx,wy){
@@ -117,25 +118,24 @@ function update(dt){
   player.moving=mag>0.08;
   if(player.moving){
     if(Math.abs(ix)>Math.abs(iy)) player.face=ix<0?'left':'right'; else player.face=iy<0?'up':'down';
-    player.anim+=dt*8;
-  } else player.anim=0;
+    player.runT+=dt;
+  } else player.runT=0;
   const step=player.speed*mag*dt;
   let nx=player.x+ix*step; if(!feetBlocked(nx,player.y)) player.x=nx;
   let ny=player.y+iy*step; if(!feetBlocked(player.x,ny)) player.y=ny;
   updateCamera();
 }
 
-// draw player (Alden sprite)
+// draw player (Alden run animation)
 function drawPlayer(){
   const [sx,sy]=w2s(player.x,player.y); const s=RS;
-  const bob=player.moving?Math.abs(Math.sin(player.anim))*2.4*s:0;
-  // contact shadow
   ctx.save(); ctx.globalAlpha=.32; ctx.fillStyle='#000';
   ctx.beginPath(); ctx.ellipse(sx,sy,ASIZE*0.20*s,ASIZE*0.07*s,0,0,Math.PI*2); ctx.fill(); ctx.restore();
-  const im=ASPR[player.face];
+  const im=ARUN[player.face];
+  const fi=player.moving ? (Math.floor(player.runT*RUN_FPS)%RUN_FRAMES) : 0;
   if(im && im.complete && im.naturalWidth){
-    const dh=ASIZE*s, dw=dh*(im.naturalWidth/im.naturalHeight);
-    ctx.drawImage(im, sx-dw/2, sy-dh-bob, dw, dh);
+    const dh=ASIZE*s, dw=dh*(RUN_CW/RUN_CH);
+    ctx.drawImage(im, fi*RUN_CW,0,RUN_CW,RUN_CH, sx-dw/2, sy-dh, dw, dh);
   } else {
     ctx.fillStyle='#7a5a34'; ctx.fillRect(sx-6*s, sy-30*s, 12*s, 30*s);
   }
