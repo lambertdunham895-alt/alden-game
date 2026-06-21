@@ -26,7 +26,7 @@
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="ver">OVERLOOK v3</div>
+<div id="ver">OVERLOOK v4</div>
 <div id="hint">Drag anywhere to walk &middot; or WASD / arrow keys</div>
 <div id="title"><div class="t">Briar Hollow</div><div class="s">The Overlook</div></div>
 <div id="loading">Loading Briar Hollow&hellip;</div>
@@ -53,6 +53,13 @@ scene.onload=()=>{ ready=true; const l=document.getElementById('loading'); if(l)
   document.getElementById('title').style.opacity='0'; };
 scene.onerror=()=>{ document.getElementById('loading').textContent='Could not load assets/scene.jpg'; };
 scene.src='assets/scene.jpg?v=3';
+
+// Alden sprites
+const ASPR={}; let aLoaded=0;
+for(const f of ['down','up','left','right']){
+  const im=new Image(); im.onload=()=>{aLoaded++;}; im.src='assets/alden_'+f+'.png?v=4'; ASPR[f]=im;
+}
+const ASIZE=120;   // Alden height in world px (tunable)
 
 // player (world = scene px)
 const player={ x:768, y:980, speed:230, face:'down', moving:false, anim:0 };
@@ -118,29 +125,20 @@ function update(dt){
   updateCamera();
 }
 
-// draw player (small adventurer placeholder)
+// draw player (Alden sprite)
 function drawPlayer(){
-  const [sx,sy]=w2s(player.x,player.y); const s=RS*PSCALE;
-  const bob=player.moving?Math.abs(Math.sin(player.anim))*2*s:0;
-  ctx.save(); ctx.globalAlpha=.35; ctx.fillStyle='#000';
-  ctx.beginPath(); ctx.ellipse(sx,sy,11*s,4*s,0,0,Math.PI*2); ctx.fill(); ctx.restore();
-  ctx.save(); ctx.translate(sx,sy-bob);
-  // legs
-  ctx.fillStyle='#3a2c1c'; ctx.fillRect(-5*s,-12*s,4*s,12*s); ctx.fillRect(1*s,-12*s,4*s,12*s);
-  // tunic
-  ctx.fillStyle='#7a5a34'; ctx.beginPath();
-  ctx.moveTo(-8*s,-12*s); ctx.lineTo(8*s,-12*s); ctx.lineTo(6*s,-30*s); ctx.lineTo(-6*s,-30*s); ctx.closePath(); ctx.fill();
-  // pack strap
-  ctx.fillStyle='#5a4022'; ctx.fillRect(-2*s,-30*s,4*s,18*s);
-  // head
-  ctx.fillStyle='#e9b489'; ctx.beginPath(); ctx.arc(0,-35*s,6*s,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#5a3a22'; ctx.beginPath(); ctx.arc(0,-37*s,6*s,Math.PI,2*Math.PI); ctx.fill();
-  // facing cue
-  ctx.fillStyle='#2a1c12';
-  if(player.face==='down'){ ctx.fillRect(-3*s,-35*s,1.6*s,1.6*s); ctx.fillRect(1.5*s,-35*s,1.6*s,1.6*s); }
-  else if(player.face==='left'){ ctx.fillRect(-4*s,-35*s,1.8*s,1.8*s); }
-  else if(player.face==='right'){ ctx.fillRect(2.2*s,-35*s,1.8*s,1.8*s); }
-  ctx.restore();
+  const [sx,sy]=w2s(player.x,player.y); const s=RS;
+  const bob=player.moving?Math.abs(Math.sin(player.anim))*2.4*s:0;
+  // contact shadow
+  ctx.save(); ctx.globalAlpha=.32; ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.ellipse(sx,sy,ASIZE*0.20*s,ASIZE*0.07*s,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  const im=ASPR[player.face];
+  if(im && im.complete && im.naturalWidth){
+    const dh=ASIZE*s, dw=dh*(im.naturalWidth/im.naturalHeight);
+    ctx.drawImage(im, sx-dw/2, sy-dh-bob, dw, dh);
+  } else {
+    ctx.fillStyle='#7a5a34'; ctx.fillRect(sx-6*s, sy-30*s, 12*s, 30*s);
+  }
 }
 
 // FFX-style minimap = the walk mesh
