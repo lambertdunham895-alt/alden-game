@@ -26,7 +26,7 @@
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="ver">OVERLOOK v4</div>
+<div id="ver">OVERLOOK v5</div>
 <div id="hint">Drag anywhere to walk &middot; or WASD / arrow keys</div>
 <div id="title"><div class="t">Briar Hollow</div><div class="s">The Overlook</div></div>
 <div id="loading">Loading Briar Hollow&hellip;</div>
@@ -57,7 +57,7 @@ scene.src='assets/scene.jpg?v=3';
 // Alden sprites
 const ASPR={}; let aLoaded=0;
 for(const f of ['down','up','left','right']){
-  const im=new Image(); im.onload=()=>{aLoaded++;}; im.src='assets/alden_'+f+'.png?v=4'; ASPR[f]=im;
+  const im=new Image(); im.onload=()=>{aLoaded++;}; im.src='assets/alden_'+f+'.png?v=5'; ASPR[f]=im;
 }
 const ASIZE=120;   // Alden height in world px (tunable)
 
