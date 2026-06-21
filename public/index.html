@@ -26,7 +26,7 @@
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="ver">OVERLOOK v1</div>
+<div id="ver">OVERLOOK v2</div>
 <div id="hint">Drag anywhere to walk &middot; or WASD / arrow keys</div>
 <div id="title"><div class="t">Briar Hollow</div><div class="s">The Overlook</div></div>
 <div id="loading">Loading Briar Hollow&hellip;</div>
@@ -55,13 +55,14 @@ scene.onerror=()=>{ document.getElementById('loading').textContent='Could not lo
 scene.src='assets/scene.jpg?v=1';
 
 // player (world = scene px)
-const player={ x:768, y:880, speed:215, face:'down', moving:false, anim:0 };
+const player={ x:768, y:880, speed:230, face:'down', moving:false, anim:0 };
+const PSCALE=2.0;   // character render scale
 
 function cellBlocked(wx,wy){
   if(wx<0||wy<0||wx>=SCENE_W||wy>=SCENE_H) return true;
   return GRID[(wy/TS)|0][(wx/TS)|0]===0;
 }
-const FH=11, FV=6;
+const FH=14, FV=8;
 function feetBlocked(wx,wy){
   return cellBlocked(wx-FH,wy-FV)||cellBlocked(wx+FH,wy-FV)||cellBlocked(wx-FH,wy+FV)||cellBlocked(wx+FH,wy+FV)||cellBlocked(wx,wy);
 }
@@ -119,7 +120,7 @@ function update(dt){
 
 // draw player (small adventurer placeholder)
 function drawPlayer(){
-  const [sx,sy]=w2s(player.x,player.y); const s=RS*1.0;
+  const [sx,sy]=w2s(player.x,player.y); const s=RS*PSCALE;
   const bob=player.moving?Math.abs(Math.sin(player.anim))*2*s:0;
   ctx.save(); ctx.globalAlpha=.35; ctx.fillStyle='#000';
   ctx.beginPath(); ctx.ellipse(sx,sy,11*s,4*s,0,0,Math.PI*2); ctx.fill(); ctx.restore();
